@@ -1,0 +1,26 @@
+{
+  "name": "project7-twitter-api-interface",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node js/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonyrud/FSTD-Project7-Build-a-Twitter-Interface.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tonyrud/FSTD-Project7-Build-a-Twitter-Interface/issues"
+  },
+  "homepage": "https://github.com/tonyrud/FSTD-Project7-Build-a-Twitter-Interface#readme",
+  "dependencies": {
+    "express": "^4.15.2",
+    "nodemon": "^1.11.0",
+    "pug": "^2.0.0-beta11",
+    "twit": "^2.2.5"
+  }
+}
