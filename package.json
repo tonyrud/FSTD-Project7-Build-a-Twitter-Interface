@@ -18,8 +18,8 @@
   },
   "homepage": "https://github.com/tonyrud/FSTD-Project7-Build-a-Twitter-Interface#readme",
   "dependencies": {
+    "body-parser": "^1.17.1",
     "express": "^4.15.2",
-    "moment": "^2.17.1",
     "nodemon": "^1.11.0",
     "pug": "^2.0.0-beta11",
     "twit": "^2.2.5"
