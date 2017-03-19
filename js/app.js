@@ -1,31 +1,25 @@
 'use strict'
-const express = require('express'),
-  app = express(),
-  port = 8080,
-  config = require('./config.js'),
-  Twitter = require('twit'),
-  twitter = new Twitter(config),
-  path = require('path'),
-  bodyParser = require('body-parser'),
-  displayCount = 5
+const express = require('express')
+const app = express()
+const server = require('http').createServer(app)
+const port = 8080
+const config = require('./config.js')
+const Twitter = require('twit')
+const twitter = new Twitter(config)
+const path = require('path')
+const bodyParser = require('body-parser')
+const displayCount = 5
 
 // create static serving of files
 app.use('/static', express.static(path.join(__dirname, '..\\public')))
 
 // setup pug templates
 app.set('view engine', 'pug')
-app.set('views', __dirname + '/views')
+app.set('views', path.join(__dirname, '/views'))
 
 app.use(bodyParser.urlencoded({
   extended: true
 }))
-
-const stream = twitter.stream('statuses/user_timeline')
-
-stream.on('tweet', function (tweet) {
-  debugger
-  console.log(tweet)
-})
 
 function getTwitterData (next) {
   // object to hold all of profile API data
@@ -138,12 +132,12 @@ app.post('/', function (req, res) {
     status: req.body.postTweet
   }, function (err) {
     if (!err) {
-    // redirect after posted
+      // redirect after posted
       res.redirect('/')
     }
   })
 })
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`server started on port: ${port}`)
 })

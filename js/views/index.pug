@@ -10,7 +10,7 @@ html
       form(method="post", action="/")
         .circle--fluid
           .circle--fluid--cell.circle--fluid--primary.align-bottom.app--tweet--post
-            div(class="app--avatar", style="background-image: url(static/images/m-spore.png)")
+            div(class="app--avatar", style="background-image: url(" + timeline.profile[0].profileImg + ")")
             textarea.circle--textarea--input#tweet-textarea(placeholder="What's happening?", name="postTweet", enctype="application/x-www-form-urlencoded")
             strong(class="app--tweet--char", id="tweet-char") 140
           .circle--fluid--cell.align-bottom
