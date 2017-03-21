@@ -9,9 +9,15 @@ const twitter = new Twitter(config)
 const path = require('path')
 const bodyParser = require('body-parser')
 const displayCount = 5
+const templateData = {
+  tweets: [],
+  profile: [],
+  following: [],
+  messages: []
+}
 
 // create static serving of files
-app.use('/static', express.static(path.join(__dirname, '..\\public')))
+app.use(express.static('public'))
 
 // setup pug templates
 app.set('view engine', 'pug')
@@ -21,43 +27,43 @@ app.use(bodyParser.urlencoded({
   extended: true
 }))
 
-function getTwitterData (next) {
-  // object to hold all of profile API data
-  const templateData = {
-    tweets: [],
-    profile: [],
-    following: [],
-    messages: []
-  }
-
   // get friends
+const getFriends = new Promise((resolve, reject) => {
   twitter.get('friends/list', {
     screen_name: config.screen_name,
     count: displayCount
   }, function (err, data) {
     if (!err && data) {
-      const followers = data.users
-
-      followers.forEach(follower => {
-        templateData.following.push({
-          follower_name: follower.name,
-          follower_screenName: follower.screen_name,
-          follower_img: follower.profile_image_url
-        })
+      const followers = data.users.map(follower => {
+        let followObj = {}
+        followObj.follower_name = follower.name
+        followObj.follower_screenName = follower.screen_name
+        followObj.follower_img = follower.profile_image_url
+        return followObj
       })
+      resolve({followers: followers})
     } else {
       next(err)
     }
   })
+})
 
-  // get messages
+function getTwitterData (next) {
+  // object to hold all of profile API data
+  Promise.all([getFriends, getTweets, getMessages]).then(values => {
+    console.log(values)
+  })
+}
+
+const getMessages = new Promise((resolve, reject) => {
   twitter.get('direct_messages', {
     screen_name: config.screen_name,
     count: 5
   }, function (err, data) {
+    const msgObj = []
     if (!err && data) {
       data.forEach(msg => {
-        templateData.messages.push({
+        msgObj.push({
           message_text: msg.text,
           message_sender_name: msg.sender_screen_name,
           message_user_name: msg.recipient_screen_name,
@@ -65,52 +71,56 @@ function getTwitterData (next) {
           message_time: msg.created_at.slice(0, 10)
         })
       })
+      resolve({messages: msgObj})
     } else {
       next(err)
     }
   })
+})
 
-  // get tweets
+
+  // // get tweets
+const getTweets = new Promise((resolve, reject) => {
   twitter.get('statuses/user_timeline', {
     screen_name: config.screen_name,
     count: displayCount
   }, function (err, data) {
+    let tweetObj = []
+    let profileObj = []
     if (!err && data) {
       for (let i in data) {
-        // destructure the basic data
-        const {
-          text,
-          favorite_count,
-          retweet_count
-        } = data[i]
         // create posts array for pug template
-        templateData.tweets.push({
-          content: text,
-          favCount: favorite_count,
-          retweetCount: retweet_count,
+        tweetObj.push({
+          content: data[i].text,
+          favCount: data[i].favorite_count,
+          retweetCount: data[i].retweet_count,
           userName: data[i].user.name,
           screenName: data[i].user.screen_name,
           profilePic: data[i].user.profile_image_url,
           postTime: data[i].created_at.slice(0, 10)
         })
       }
-      // profile info
-      templateData.profile.push({
+     // profile info
+      profileObj.push({
         banner: data[0].user.profile_banner_url,
         screenName: data[0].user.screen_name,
         profileImg: data[0].user.profile_image_url,
         following: data[0].user.friends_count
       })
-      // pass info arrays into next function call
-      next(err, templateData)
-    } else {
-      next(err)
+      resolve({tweets: tweetObj, profile: profileObj})
     }
   })
-}
+})
+      
+  //     // pass info arrays into next function call
+  //     next(err, templateData)
+  //   } else {
+  //     next(err)
+  //   }
+  // })
 
 app.get('/', function (req, res) {
-  // make API call
+  // make API promise calls and setup data
   getTwitterData(function (err, data) {
     // check if any errors
     if (!err && data) {
