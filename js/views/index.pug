@@ -10,7 +10,7 @@ html
       form(method="post", action="/")
         .circle--fluid
           .circle--fluid--cell.circle--fluid--primary.align-bottom.app--tweet--post
-            div(class="app--avatar", style="background-image: url(" + timeline.profile[0].profileImg + ")")
+            div(class="app--avatar", style="background-image: url(" + profile[0].profileImg + ")")
             textarea.circle--textarea--input#tweet-textarea(placeholder="What's happening?", name="postTweet", enctype="application/x-www-form-urlencoded")
             strong(class="app--tweet--char", id="tweet-char") 140
           .circle--fluid--cell.align-bottom
@@ -26,7 +26,7 @@ html
             h2 Timeline
         .grid-33
           .app--section--heading
-            strong #{timeline.profile[0].following}
+            strong #{profile[0].following}
             h2 Following
         .grid-33
           .app--section--heading
@@ -36,7 +36,7 @@ html
       .grid-33
         .app--section
           ul.app--tweet--list
-            for post in timeline.tweets
+            for post in tweets
               li
                 strong.app--tweet--timestamp #{post.postTime}
                 a.app--tweet--author
@@ -76,14 +76,14 @@ html
       .grid-33
         .app--section
           ul.app--user--list
-            for post in timeline.following
+            for follower in followers
               li
                 .circle--fluid
                   .circle--fluid--cell.circle--fluid--primary
                     a.app--tweet--author
-                      div(class="app--avatar", style="background-image: url(" + post.follower_img + ")")
-                      h4 #{post.follower_name}
-                      p  @#{post.follower_screenName}
+                      div(class="app--avatar", style="background-image: url(" + follower.follower_img + ")")
+                      h4 #{follower.follower_name}
+                      p  @#{follower.follower_screenName}
                   .circle--fluid--cell
                     a.button.button-text Unfollow
       .grid-33
@@ -91,9 +91,9 @@ html
           ul.app--message--list
             li
               h3 Conversation with 
-                a #{timeline.profile[0].screenName}
+                a #{profile[0].screenName}
               ul.app--message--conversation
-                for message in timeline.messages
+                for message in messages
                   li.app--message
                     div(class="app--avatar", style="background-image: url(" + message.message_photo + ")")
                     p.app--message--text #{message.message_text}

@@ -9,12 +9,6 @@ const twitter = new Twitter(config)
 const path = require('path')
 const bodyParser = require('body-parser')
 const displayCount = 5
-const templateData = {
-  tweets: [],
-  profile: [],
-  following: [],
-  messages: []
-}
 
 // create static serving of files
 app.use(express.static('public'))
@@ -32,7 +26,7 @@ const getFriends = new Promise((resolve, reject) => {
   twitter.get('friends/list', {
     screen_name: config.screen_name,
     count: displayCount
-  }, function (err, data) {
+  }, function (err, data, next) {
     if (!err && data) {
       const followers = data.users.map(follower => {
         let followObj = {}
@@ -48,18 +42,11 @@ const getFriends = new Promise((resolve, reject) => {
   })
 })
 
-function getTwitterData (next) {
-  // object to hold all of profile API data
-  Promise.all([getFriends, getTweets, getMessages]).then(values => {
-    console.log(values)
-  })
-}
-
 const getMessages = new Promise((resolve, reject) => {
   twitter.get('direct_messages', {
     screen_name: config.screen_name,
     count: 5
-  }, function (err, data) {
+  }, function (err, data, next) {
     const msgObj = []
     if (!err && data) {
       data.forEach(msg => {
@@ -78,13 +65,12 @@ const getMessages = new Promise((resolve, reject) => {
   })
 })
 
-
   // // get tweets
 const getTweets = new Promise((resolve, reject) => {
   twitter.get('statuses/user_timeline', {
     screen_name: config.screen_name,
     count: displayCount
-  }, function (err, data) {
+  }, function (err, data, next) {
     let tweetObj = []
     let profileObj = []
     if (!err && data) {
@@ -108,32 +94,24 @@ const getTweets = new Promise((resolve, reject) => {
         following: data[0].user.friends_count
       })
       resolve({tweets: tweetObj, profile: profileObj})
+    } else {
+      next(err)
     }
   })
 })
-      
-  //     // pass info arrays into next function call
-  //     next(err, templateData)
-  //   } else {
-  //     next(err)
-  //   }
-  // })
 
 app.get('/', function (req, res) {
   // make API promise calls and setup data
-  getTwitterData(function (err, data) {
-    // check if any errors
-    if (!err && data) {
-      // pass data parameter into timeline object for pug rendering
-      res.render('index', {
-        timeline: data
-      })
-    } else {
-      res.render('error', {
-        error: err.stack
-      })
-    }
+  Promise.all([getFriends, getTweets, getMessages])
+  .then(responses => {
+    res.render('index', {
+      followers: responses[0].followers,
+      profile: responses[1].profile,
+      tweets: responses[1].tweets,
+      messages: responses[2].messages
+    })
   })
+  .catch(error => { res.render('error', {error: error}) })
 })
 
 // post tweet
